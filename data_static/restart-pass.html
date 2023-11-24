@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>eMercado - Recupera tu contraseña</title>
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway:300,300i,400,400i,700,700i,900,900i" rel="stylesheet">
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/restartstyle.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: rgb(248, 249, 250);
+    }
+  </style>
+</head>
+
+<body class="reset-pass">
+  <form id="formRestartPass">
+    <h1>Recupera tu contraseña</h1>
+    <input type="email" id="email" placeholder="Correo electrónico" required/>
+    <button type="submit" id="restartPassButton">Recuperar mi contraseña</button>
+  </form>
+
+  <footer class="text-muted bg-light">
+    <div class="container">
+      
+      <p>Este sitio forma parte de <a href="https://jovenesaprogramar.edu.uy/" target="_blank">Jovenes a Programar</a></p>
+    </div>
+    
+    <p class="float-end">
+      <a href="#">Volver arriba</a>
+    </p>
+  </footer>
+
+  <script>
+    document.getElementById('formRestartPass').addEventListener('submit', function(event) {
+    event.preventDefault();
+        
+        setTimeout(function() {
+        window.location.href = 'restart-success.html';
+      }, 200);
+    });
+  </script>
+
+</html>
