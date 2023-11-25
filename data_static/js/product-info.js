@@ -35,8 +35,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const forBody = {
           cartProducts: [
             {
+              productID : product.id,
               name: product.name,
-              count: 1, // or specify the desired quantity
+              count: 1,
               unitCost: product.cost,
               currency: product.currency,
               image: product.images[0]
