@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("¡Rellena los campos faltantes!");
     } else {
       localStorage.setItem("username", username);
-      // window.location.href = "index.html";
+      window.location.href = "index.html";
     }
   });
 });

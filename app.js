@@ -1,5 +1,3 @@
-//app.js en vez de index.js | product_comments en vez de products_comments | userVerification en vez de verificationUser
-
 const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
@@ -16,7 +14,6 @@ app.use(express.json());
 app.use(cors());
 
 secretKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0";
-// token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0
 
 const pool = mariadb.createPool({
   host: "localhost",
@@ -99,26 +96,20 @@ app.get("/cart/:id", verification, (req, res) => {
 app.post('/product-info', async (req, res) => {
   try {
     const cartItems = req.body.cartProducts;
-    console.log('Received cart data:', cartItems); 
-
-    if (!Array.isArray(cartItems)) {
-      return res.status(400).json({ error: 'Invalid cart data. Expected an array.' });
-    }
 
     const connection = await pool.getConnection();
 
     for (const cartItem of cartItems) {
-      // Check if required properties are present in each cart item
       const { name, count, unitCost, currency, image } = cartItem;
       if (!name || !count || !unitCost || !currency || !image) {
-        return res.status(400).json({ error: 'Invalid cart item data. Ensure all required fields are present.' });
+        return res.status(400).json({ error: 'Datos inválidos.' });
       }
 
-      // Insert the cart item into the database
+    
       const result = await connection.query("INSERT INTO cart (name, count, unitCost, currency, image) VALUES (?, ?, ?, ?, ?)",
         [name, count, unitCost, currency, image]);
 
-      console.log('Query executed successfully. Inserted ID:', result.insertId);
+      console.log('Éxito. ID:', result.insertId);
     }
 
     connection.release();
@@ -129,8 +120,6 @@ app.post('/product-info', async (req, res) => {
     res.status(500).json({ error: 'Error al guardar el carrito' });
   }
 });
-
-
 
 
 app.get("/cats_products/:id", (req, res) => {

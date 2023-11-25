@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
           cartProducts: [
             {
               name: product.name,
-              count: 1, // or specify the desired quantity
+              count: 1,
               unitCost: product.cost,
               currency: product.currency,
               image: product.images[0]
