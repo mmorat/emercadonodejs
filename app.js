@@ -107,7 +107,9 @@ app.delete("/cart/:id", verification, async (req, res) => {
   const result = await connection.query("DELETE FROM cart WHERE productID = ?", [
     productID,
   ]);
+}
 });
+
 
 app.post("/product-info", async (req, res) => {
   try {
