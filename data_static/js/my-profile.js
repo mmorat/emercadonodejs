@@ -1,4 +1,4 @@
-const username = sessionStorage.getItem("username") || localStorage.getItem("username");
+const username =  localStorage.getItem("username");
 const email = document.getElementById("email");
 let inputNombre = document.getElementById("nombre");
 let nombreTexto = document.getElementById("nombreValid");

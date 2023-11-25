@@ -4,6 +4,7 @@ const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const mariadb = require("mariadb");
+const cors = require('cors');
 
 const port = 3000;
 
@@ -12,8 +13,10 @@ const dataFolderPath = path.join(__dirname);
 
 app.use(express.json());
 
-secretKey = "clave secreta";
-// token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwNjE4Njg2fQ.T1qQzx_sbqE4VRSONzqQ_3WXKWNyS3eknH3A7qrg8jQ
+app.use(cors());
+
+secretKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0";
+// token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0
 
 const pool = mariadb.createPool({
   host: "localhost",
@@ -21,6 +24,18 @@ const pool = mariadb.createPool({
   password: "jap23",
   database: "emercado",
   connectionLimit: 5,
+});
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, access-token');
+
+  next();
+});
+
+app.options("/login", (req, res) => {
+  res.sendStatus(200);
 });
 
 app.post("/login", express.json(), async (req, res) => {
@@ -36,7 +51,7 @@ app.post("/login", express.json(), async (req, res) => {
       [username, password]
     );
 
-    const token = jwt.sign({ username }, "secretKey", { expiresIn: "1h" });
+    const token = jwt.sign({ username }, "secretKey");
 
     res.json({ token });
   } catch (error) {
@@ -49,11 +64,7 @@ app.post("/login", express.json(), async (req, res) => {
   }
 });
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+
 
 const verification = (req, res, next) => {
   const token = req.header("Authorization");
@@ -79,7 +90,7 @@ app.get("/cats/:id", (req, res) => {
   res.sendFile(filePath);
 });
 
-app.get("/cart/:id", (req, res) => {
+app.get("/cart/:id", verification, (req, res) => {
   const cartId = req.params.id;
   const filePath = path.join(dataFolderPath, "cart", `${cartId}.json`);
   res.sendFile(filePath);
@@ -88,11 +99,22 @@ app.get("/cart/:id", (req, res) => {
 app.post('/product-info', async (req, res) => {
   try {
     const cartItems = req.body.cartProducts;
+    console.log('Received cart data:', cartItems); 
+
+    if (!Array.isArray(cartItems)) {
+      return res.status(400).json({ error: 'Invalid cart data. Expected an array.' });
+    }
 
     const connection = await pool.getConnection();
 
     for (const cartItem of cartItems) {
+      // Check if required properties are present in each cart item
       const { name, count, unitCost, currency, image } = cartItem;
+      if (!name || !count || !unitCost || !currency || !image) {
+        return res.status(400).json({ error: 'Invalid cart item data. Ensure all required fields are present.' });
+      }
+
+      // Insert the cart item into the database
       const result = await connection.query("INSERT INTO cart (name, count, unitCost, currency, image) VALUES (?, ?, ?, ?, ?)",
         [name, count, unitCost, currency, image]);
 
@@ -107,6 +129,8 @@ app.post('/product-info', async (req, res) => {
     res.status(500).json({ error: 'Error al guardar el carrito' });
   }
 });
+
+
 
 
 app.get("/cats_products/:id", (req, res) => {
@@ -141,7 +165,7 @@ app.get("/sell/:id", (req, res) => {
   res.sendFile(filePath);
 });
 
-app.get("/user_cart/:id", (req, res) => {
+app.get("/user_cart/:id", verification, (req, res) => {
   const userId = req.params.id;
   const filePath = path.join(dataFolderPath, "user_cart", `${userId}.json`);
   res.sendFile(filePath);

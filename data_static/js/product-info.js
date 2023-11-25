@@ -28,6 +28,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function fetch4DB() {
+    fetch(`http://localhost:3000/products/${selectedProductId}`)
+      .then((response) => response.json())
+      .then((product) => {
+        const forBody = {
+          cartProducts: [
+            {
+              name: product.name,
+              count: 1, // or specify the desired quantity
+              unitCost: product.cost,
+              currency: product.currency,
+              image: product.images[0]
+            }
+          ]
+        };
+  
+        fetch("http://localhost:3000/product-info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(forBody),
+        })
+          .then((response) => response.json())
+          .then((result) => {
+            console.log(result.message);
+          });
+      });
+  }
+  
+
   function fetchInfo() {
     const productInfoURL = `http://localhost:3000/products/${selectedProductId}`;
     fetch(productInfoURL)
@@ -166,16 +197,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // COMENTARIOS
-  const username =
-    sessionStorage.getItem("username") || localStorage.getItem("username");
+  const username = localStorage.getItem("username");
   const containerComentarios = document.getElementById("comments-container");
   const formComentarios = document.getElementById("comment-form");
   let arrComentarios = [];
 
   function fetchComentarios() {
-    fetch(
-      `http://localhost:3000/product_comments/${selectedProductId}`
-    )
+    fetch(`http://localhost:3000/product_comments/${selectedProductId}`)
       .then((response) => response.json())
       .then((data) => {
         arrComentarios = data.sort(
@@ -242,6 +270,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   btnComprar.addEventListener("click", (e) => {
     e.stopPropagation();
+    fetch4DB();
+    
     btnComprar.classList.remove("btn-primary");
     btnComprar.classList.add("btn-secondary");
 

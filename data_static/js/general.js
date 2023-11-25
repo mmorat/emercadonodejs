@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.removeItem('username');
   });
 
-  const username = sessionStorage.getItem("username") || localStorage.getItem("username");
+  const username =  localStorage.getItem("username");
 
   if (!username) {
     alert("usted debe hacer login")

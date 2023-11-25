@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function(e){
 
     // display username
     
-    const username = sessionStorage.getItem("username") || localStorage.getItem("username");
+    const username =  localStorage.getItem("username");
       
     if (!username){
         setTimeout(function() {

@@ -177,10 +177,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
     });
-  // .catch((error) =>
-  //   console.error("Error al obtener los datos del carrito:", error)
-  // );
 
+    
   //carrito manual
 
   const arrayProd = JSON.parse(localStorage.getItem("cartProducts")) || [];
