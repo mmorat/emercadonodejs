@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const mariadb = require("mariadb");
-const cors = require('cors');
+const cors = require("cors");
 
 const port = 3000;
 
@@ -13,7 +13,8 @@ app.use(express.json());
 
 app.use(cors());
 
-secretKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0";
+secretKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzAwODczMTkxfQ.Tr7exZcQbt_Kz6L7dk1YbSrfyj59qNOfmlWWvM408u0";
 
 const pool = mariadb.createPool({
   host: "localhost",
@@ -24,9 +25,12 @@ const pool = mariadb.createPool({
 });
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, access-token');
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, access-token"
+  );
 
   next();
 });
@@ -37,7 +41,6 @@ app.options("/login", (req, res) => {
 
 app.post("/login", express.json(), async (req, res) => {
   const { username, password } = req.body;
-
 
   let conn;
 
@@ -61,8 +64,6 @@ app.post("/login", express.json(), async (req, res) => {
   }
 });
 
-
-
 const verification = (req, res, next) => {
   const token = req.header("Authorization");
   if (token === undefined) {
@@ -80,7 +81,6 @@ const verification = (req, res, next) => {
   }
 };
 
-
 app.get("/cats/:id", (req, res) => {
   const catsId = req.params.id;
   const filePath = path.join(dataFolderPath, "cats", `${catsId}.json`);
@@ -93,34 +93,65 @@ app.get("/cart/:id", verification, (req, res) => {
   res.sendFile(filePath);
 });
 
-app.post('/product-info', async (req, res) => {
+app.delete("/cart/:id", verification, async (req, res) => {
+  const cartItems = req.body.cartProducts;
+
+  const connection = await pool.getConnection();
+
+  for (const cartItem of cartItems) {
+    const { productID, name, count, unitCost, currency, image } = cartItem;
+    if (!productID || !name || !count || !unitCost || !currency || !image) {
+      return res.status(400).json({ error: "Datos inválidos." });
+    }
+
+  const result = await connection.query("DELETE FROM cart WHERE productID = ?", [
+    productID,
+  ]);
+});
+
+app.post("/product-info", async (req, res) => {
   try {
     const cartItems = req.body.cartProducts;
 
     const connection = await pool.getConnection();
 
     for (const cartItem of cartItems) {
-      const { name, count, unitCost, currency, image } = cartItem;
-      if (!name || !count || !unitCost || !currency || !image) {
-        return res.status(400).json({ error: 'Datos inválidos.' });
+      const { productID, name, count, unitCost, currency, image } = cartItem;
+      if (!productID || !name || !count || !unitCost || !currency || !image) {
+        return res.status(400).json({ error: "Datos inválidos." });
       }
 
-    
-      const result = await connection.query("INSERT INTO cart (name, count, unitCost, currency, image) VALUES (?, ?, ?, ?, ?)",
-        [name, count, unitCost, currency, image]);
+      const existingProduct = await connection.query(
+        "SELECT * FROM cart WHERE productID = ?",
+        [productID]
+      );
 
-      console.log('Éxito. ID:', result.insertId);
+      if (existingProduct.length > 0) {
+        const updatedCount = existingProduct[0].count + 1;
+        const updatedTotal = existingProduct[0].unitCost * updatedCount;
+
+        await connection.query(
+          "UPDATE cart SET count = ?, totalCost = ? WHERE productID = ?",
+          [updatedCount, updatedTotal, productID]
+        );
+      } else {
+        const result = await connection.query(
+          "INSERT INTO cart (productID, name, count, currency, unitCost, totalCost, image) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [productID, name, count, currency, unitCost, unitCost, image]
+        );
+        console.log("Éxito.");
+      }
+
     }
 
     connection.release();
 
-    res.status(200).json({ message: 'Carrito guardado correctamente' });
+    res.status(200).json({ message: "Carrito guardado correctamente" });
   } catch (error) {
-    console.error('Error in /product-info route:', error);
-    res.status(500).json({ error: 'Error al guardar el carrito' });
+    console.error("Error in /product-info route:", error);
+    res.status(500).json({ error: "Error al guardar el carrito" });
   }
 });
-
 
 app.get("/cats_products/:id", (req, res) => {
   const cats_productsId = req.params.id;
@@ -159,8 +190,6 @@ app.get("/user_cart/:id", verification, (req, res) => {
   const filePath = path.join(dataFolderPath, "user_cart", `${userId}.json`);
   res.sendFile(filePath);
 });
-
-
 
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);

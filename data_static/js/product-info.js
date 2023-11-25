@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const forBody = {
           cartProducts: [
             {
+              productID : product.id,
               name: product.name,
               count: 1,
               unitCost: product.cost,

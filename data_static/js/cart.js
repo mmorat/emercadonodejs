@@ -44,8 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  
-
   // función para sumar todos los elementos de un array
   function sumarArray(arr) {
     return arr.reduce((acumulador, elemento) => acumulador + elemento, 0);
@@ -159,9 +157,26 @@ document.addEventListener("DOMContentLoaded", function () {
             arrayProd.splice(index, 1);
             localStorage.setItem("cartProducts", JSON.stringify(arrayProd));
           }
-
-          articulo.remove();
-          actualizarTotal();
+          fetch(`http://localhost:3000/items/${product.id}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              articulo.remove();
+              actualizarTotal();
+              console.log("Item deleted successfully:", data);
+            })
+            .catch((error) => {
+              console.error("Error deleting item:", error);
+            });
         });
 
         cart.appendChild(articulo);
@@ -178,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    
   //carrito manual
 
   const arrayProd = JSON.parse(localStorage.getItem("cartProducts")) || [];
@@ -260,7 +274,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           articulo.remove();
           actualizarTotal();
-          
         });
 
         cart.appendChild(articulo);
@@ -333,8 +346,6 @@ form.addEventListener("submit", async function (event) {
 
     const successMessage = document.getElementById("successMessage");
     successMessage.style.display = "block";
-
-    
   }
 });
 
